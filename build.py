@@ -61,6 +61,8 @@ def parse_post(path: Path) -> dict | None:
                     meta["title"] = v
                 elif k == "date":
                     meta["date"] = v.strip().strip("'\"")
+                elif k == "display":
+                    meta["display"] = v.strip().strip("'\"")
                 elif k == "tags":
                     raw = v.strip().strip("[]")
                     meta["tags"] = [t.strip().strip("'\"") for t in raw.split(",") if t.strip()]
@@ -75,6 +77,8 @@ def parse_post(path: Path) -> dict | None:
     meta["slug"] = path.stem
     meta["body"] = text
     meta["date_display"] = meta["date"] or "—"
+    # display: 列表里显示的短标题（默认用 title）
+    meta["list_title"] = meta.get("display") or meta["title"]
     return meta
 
 
@@ -385,7 +389,7 @@ def build():
             tags = "".join(f'<span class="tag">{html.escape(t)}</span>' for t in p["tags"])
             ex = html.escape(excerpt(p["body"]))
             stories.append(f"""<div class="story">
-  <h2><a href="{p['slug']}.html">{html.escape(p['title'])}</a></h2>
+  <h2><a href="{p['slug']}.html">{html.escape(p['list_title'])}</a></h2>
   <div class="byline">{p['date_display']}</div>
   <p class="excerpt">{ex}</p>
   <div>{tags}</div>
