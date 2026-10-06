@@ -32,9 +32,9 @@ DIST = ROOT / "docs"   # 输出到 docs/ —— GitHub Pages 可直接把这个�
 
 # ── 配置（改这里就改了站点）───────────────────────────────────────────────
 SITE = {
-    "title": "Amazinnn 的日志",
-    "subtitle": "植物标本 · 观察笔记 · 边角生长",
-    "footer": "纸上生长 —— 缓慢，但确实在长",
+    "title": "Amazinnn",
+    "subtitle": "写点想写的",
+    "footer": "",   # 不想显示就留空
 }
 # ─────────────────────────────────────────────────────────────────────────
 
@@ -172,8 +172,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 16.5px;
-  line-height: 1.9;
+  font-size: 17px;
+  line-height: 1.95;
   letter-spacing: .01em;
 }
 
@@ -200,18 +200,13 @@ body::before {
   padding-bottom: 22px; margin-bottom: 8px;
   text-align: center;
 }
-.masthead .kicker {
-  font-family: var(--sans);
-  font-size: 11.5px; letter-spacing: .38em; text-transform: uppercase;
-  color: var(--ink-faint); margin-bottom: 14px;
-}
 .masthead h1 {
-  margin: 0; font-size: 42px; font-weight: 600;
-  letter-spacing: .08em; color: var(--leaf-deep);
+  margin: 0; font-size: 38px; font-weight: 600;
+  letter-spacing: .06em; color: var(--leaf-deep);
 }
 .masthead .subtitle {
   margin: 10px 0 0; color: var(--ink-soft);
-  font-size: 14.5px; font-style: italic; letter-spacing: .06em;
+  font-size: 15px; letter-spacing: .04em;
 }
 .dateline {
   display: flex; justify-content: space-between; align-items: baseline;
@@ -358,6 +353,7 @@ def build():
     posts.sort(key=lambda x: x["sort_key"], reverse=True)
 
     # 文章页
+    page_footer = f'\n<div class="site-footer">{SITE["footer"]}</div>' if SITE.get("footer") else ""
     for p in posts:
         body_html = md_to_html(p["body"])
         tags = "".join(f'<span class="tag">{html.escape(t)}</span>' for t in p["tags"])
@@ -369,10 +365,8 @@ def build():
   </div>
   {body_html}
   <div>{tags}</div>
-  <div class="article-footer"><a class="back" href="index.html">← 返回目录</a></div>
-</article>
-
-<div class="site-footer">{SITE['footer']}</div>"""
+  <div class="article-footer"><a class="back" href="index.html">← 返回</a></div>
+</article>{page_footer}"""
         (DIST / f"{p['slug']}.html").write_text(
             PAGE.format(title=html.escape(p["title"]), subtitle="", content=content),
             encoding="utf-8")
@@ -382,8 +376,8 @@ def build():
         latest = posts[0]
         dateline = (
             f'<div class="dateline">'
-            f"<span>No. {len(posts):02d} · 共 {len(posts)} 篇</span>"
-            f"<span>最近更新 {latest['date_display']}</span>"
+            f"<span>{len(posts)} 篇</span>"
+            f"<span>最后更新 {latest['date_display']}</span>"
             f"</div>"
         )
         stories = []
@@ -399,17 +393,16 @@ def build():
         columns = f'<div class="column-rule">\n' + "\n".join(stories) + "\n</div>"
     else:
         dateline = ""
-        columns = '<div class="empty">纸页还空着。</div>'
+        columns = '<div class="empty">还没有文章。</div>\n<div class="empty" style="font-size:13px;padding-top:0">写点东西就会出现在这里。</div>'
+
+    footer = f'\n<div class="site-footer">{SITE["footer"]}</div>' if SITE.get("footer") else ""
 
     index = f"""<header class="masthead">
-  <div class="kicker">Herbarium</div>
   <h1>{SITE['title']}</h1>
   <p class="subtitle">{SITE['subtitle']}</p>
 </header>
 {dateline}
-{columns}
-
-<div class="site-footer">{SITE['footer']}</div>"""
+{columns}{footer}"""
     (DIST / "index.html").write_text(
         PAGE.format(title=SITE["title"], subtitle=SITE["subtitle"], content=index),
         encoding="utf-8")
