@@ -90,7 +90,10 @@ def md_to_html(md: str) -> str:
         s = html.escape(s, quote=False)
         s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
         s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
-        s = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"<em>\1</em>", s)
+        s = re.sub(r"(?<!\*)\*([^\*\n]+)\*(?!\*)", r"<em>\1</em>", s)
+        # 图片: ![alt](src)
+        s = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r'<img src="\2" alt="\1" style="max-width:100%;height:auto;display:block;margin:24px auto;border-radius:4px">', s)
+        # 链接: [text](url)
         s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', s)
         return s
 
@@ -347,6 +350,10 @@ def build():
     if DIST.exists():
         shutil.rmtree(DIST)
     DIST.mkdir(parents=True)
+    # 同步 public/ 静态资源（images 等）到 dist
+    PUBLIC = ROOT / "public"
+    if PUBLIC.exists():
+        shutil.copytree(PUBLIC, DIST, dirs_exist_ok=True)
     (DIST / "style.css").write_text(CSS, encoding="utf-8")
 
     posts = []
