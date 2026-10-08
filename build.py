@@ -354,6 +354,25 @@ def build():
     PUBLIC = ROOT / "public"
     if PUBLIC.exists():
         shutil.copytree(PUBLIC, DIST, dirs_exist_ok=True)
+    # 本地图片转 webp（压缩减小体积；国内加载 GitHub Pages 图片经常慢/卡，webp 更小更快）
+    import subprocess as _sp
+    IMG_SRC = DIST / "images" / "kaguya"
+    if IMG_SRC.exists():
+        for f in sorted(IMG_SRC.iterdir()):
+            if f.suffix.lower() in (".jpg", ".jpeg", ".png"):
+                orig_size = f.stat().st_size
+                target = f.with_suffix(".webp")
+                print(f"  ↓ 转换 {f.name} -> webp")
+                r = _sp.run(
+                    ["cwebp", "-quiet", "-q", "82", str(f), "-o", str(target)],
+                    capture_output=True, text=True)
+                if target.exists() and target.stat().st_size > 0:
+                    f.unlink()
+                    print(f"  ✓ {target.name} ({target.stat().st_size}B, 原 {orig_size}B)")
+                else:
+                    if target.exists():
+                        target.unlink()
+                    print(f"  ✗ cwebp 失败({r.stderr[:60]})，保留原图 {f.name}")
     (DIST / "style.css").write_text(CSS, encoding="utf-8")
 
     posts = []
