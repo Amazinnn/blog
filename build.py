@@ -93,6 +93,8 @@ def md_to_html(md: str) -> str:
         s = re.sub(r"(?<!\*)\*([^\*\n]+)\*(?!\*)", r"<em>\1</em>", s)
         # 图片: ![alt](src)
         s = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r'<img src="\2" alt="\1" style="max-width:100%;height:auto;display:block;margin:24px auto;border-radius:4px">', s)
+        # 站点在 /blog/ 子目录, 把正文里的根绝对路径补上 /blog 前缀
+        s = re.sub(r'src="/images/', 'src="/blog/images/', s)
         # 链接: [text](url)
         s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', s)
         return s
